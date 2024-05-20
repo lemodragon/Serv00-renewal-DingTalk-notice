@@ -6,6 +6,7 @@ import hmac
 import hashlib
 import base64
 import urllib.parse
+from datetime import datetime
 
 url = 'https://synctv.lolita.pp.ua'
 
@@ -83,29 +84,28 @@ if response.status_code != 200:
 
 else:
     print(f"URL returned status code: {response.status_code}")
-    print("Sending success message to DingTalk bot...")
 
-    # 发送成功消息到钉钉机器人
-    success_message = "Master,SyncTV服务正常捏！"
-    timestamp = str(round(time.time() * 1000))
-    secret_enc = secret.encode('utf-8')
-    string_to_sign = '{}\n{}'.format(timestamp, secret)
-    string_to_sign_enc = string_to_sign.encode('utf-8')
-    hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
-    sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
-
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        "msgtype": "text",
-        "text": {"content": success_message},
-    }
-
-    url_with_signature = f"{webhook_url}&timestamp={timestamp}&sign={sign}"
-    print("Sending request to:", url_with_signature)
-    print("Request headers:", headers)
-    print("Request data:", data)
-
+# 检查是否需要发送成功通知
+now = datetime.now()
+if now.hour == 10 and now.minute == 30:  # 本地时间10：30分对应北京时间下午4：30通知一次
     try:
+        # 发送钉钉机器人消息
+        success_message = "Master,SyncTV服务正常捏！"
+        timestamp = str(round(time.time() * 1000))
+        secret_enc = secret.encode('utf-8')
+        string_to_sign = '{}\n{}'.format(timestamp, secret)
+        string_to_sign_enc = string_to_sign.encode('utf-8')
+        hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
+        sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
+        headers = {'Content-Type': 'application/json'}
+        data = {
+            "msgtype": "text",
+            "text": {"content": success_message},
+        }
+        url_with_signature = f"{webhook_url}&timestamp={timestamp}&sign={sign}"
+        print("Sending request to:", url_with_signature)
+        print("Request headers:", headers)
+        print("Request data:", data)
         response = requests.post(url_with_signature, headers=headers, json=data)
         print("Response status code:", response.status_code)
         print("Response text:", response.text)
