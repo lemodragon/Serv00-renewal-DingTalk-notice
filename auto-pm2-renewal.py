@@ -1,4 +1,3 @@
-import socket
 import paramiko
 import time
 import hmac
@@ -7,10 +6,11 @@ import base64
 import urllib.parse
 from datetime import datetime
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-# 定义目标 URL 和端口
-url = 's0.example.com'
-port = 443  # HTTPS 默认使用 443 端口
+# 定义目标 URL (添加 https:// 协议头)
+url = 'https://s2.example.com'
 
 # SSH 连接信息
 ssh_host = 's2.serv00.com'
@@ -23,24 +23,24 @@ ssh_password = '密码'
 webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 secret = 'SEC0e0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
+
 # 定义重试次数和间隔时间
 max_retries = 4   # 5次
 retry_interval = 300  # 5分钟
 
-# 使用 socket 检查 URL 的状态
-def check_website(host, port=80, timeout=10):
+# 使用 request 检查 URL 的状态
+def check_website(url):
     try:
-        sock = socket.create_connection((host, port), timeout)
-        sock.close()
-        return True
-    except socket.error:
+        response = requests.get(url, verify=False, timeout=10)
+        return response.status_code == 200
+    except:
         return False
 
 retry_count = 0
 success = False
 
 while retry_count < max_retries and not success:
-    if check_website(url, port):  # 确保在调用时传递了 port 参数
+    if check_website(url):
         print("Website is up and running!")
         success = True
     else:
