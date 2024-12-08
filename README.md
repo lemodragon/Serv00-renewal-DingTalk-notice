@@ -7,3 +7,5 @@
 - 检查指定网站的状态
 - 在网站不可用时，通过 SSH 重启 PM2 进程
 - 通过钉钉机器人发送通知
+
+![1000079029](https://github.com/user-attachments/assets/768ba021-10ba-4f82-82af-e52e35140fd7)
